@@ -2,58 +2,88 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>لوحة التحكم الإدارية | Management Console</title>
+  <title>لوحة التحكم الإدارية | System Console</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root { --sidebar: #0f172a; --bg: #f8fafc; --primary: #6366f1; }
-    body { font-family: 'Inter', sans-serif; margin: 0; display: flex; background: var(--bg); color: #1e293b; height: 100vh; overflow: hidden; }
+    :root { --sidebar: #0f172a; --bg: #f8fafc; --primary: #6366f1; --accent: #818cf8; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; display: flex; background: var(--bg); color: #1e293b; height: 100vh; overflow: hidden; }
     
+    /* Sidebar Navigation */
     .sidebar { width: 280px; background: var(--sidebar); color: white; padding: 40px 20px; display: flex; flex-direction: column; }
-    .sidebar h2 { font-size: 18px; color: #818cf8; margin-bottom: 40px; letter-spacing: 1px; }
-    .nav-link { padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
-    .nav-link:hover { background: rgba(255,255,255,0.05); }
-    .nav-link.active { background: var(--primary); box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3); }
+    .sidebar h2 { font-size: 14px; color: var(--accent); margin-bottom: 40px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+    .nav-link { padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; font-weight: 500; color: #94a3b8; }
+    .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
+    .nav-link.active { background: var(--primary); color: white; box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3); }
 
+    /* Main Area */
     .content { flex: 1; padding: 40px; overflow-y: auto; }
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .header-row h1 { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0; }
     
+    /* Stats Cards */
     .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 40px; }
-    .stat-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
-    .stat-card small { color: #64748b; font-weight: 600; }
-    .stat-card div { font-size: 32px; font-weight: 800; margin-top: 5px; }
+    .stat-card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+    .stat-card small { color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .stat-card div { font-size: 36px; font-weight: 800; margin-top: 10px; color: #0f172a; }
 
+    /* Chart Area */
+    .chart-container { background: white; padding: 30px; border-radius: 24px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+    
+    /* Table Styling */
     .table-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
     table { width: 100%; border-collapse: collapse; }
-    th { background: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #64748b; }
-    td { padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 14px; }
+    th { background: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 14px; color: #334155; }
     
-    .status { padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; }
+    /* Status Badges */
+    .status { padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .status-pending { background: #fff7ed; color: #c2410c; }
     .status-done { background: #f0fdf4; color: #15803d; }
+    .status-rejected { background: #fef2f2; color: #991b1b; }
     
-    .action-btn { border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-approve { background: #eef2ff; color: #4f46e5; }
+    /* Action Buttons */
+    .actions-flex { display: flex; gap: 8px; justify-content: center; }
+    .btn-action { border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.2s; }
+    .btn-approve { background: #dcfce7; color: #15803d; }
+    .btn-approve:hover { background: #15803d; color: white; }
+    .btn-reject { background: #fef2f2; color: #991b1b; }
+    .btn-reject:hover { background: #991b1b; color: white; }
+    .btn-delete { background: #f1f5f9; color: #64748b; }
+    .btn-delete:hover { background: #64748b; color: white; }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <h2>SYSTEM CONSOLE</h2>
-  <div class="nav-link active">📊 نظرة عامة</div>
-  <div class="nav-link" onclick="location.href='admin-halls.html'">⚙️ إدارة المساحات</div>
-  <div class="nav-link" onclick="location.href='index.html'">🏠 الموقع العام</div>
+  <h2>System Console</h2>
+  <div class="nav-link active">📊 Dashboard Overview</div>
+  <div class="nav-link" onclick="location.href='admin-halls.html'">⚙️ Venue Management</div>
+  <div class="nav-link" onclick="location.href='index.html'">🏠 Back to Live Site</div>
 </div>
 
 <div class="content">
   <div class="header-row">
-    <h1>لوحة المتابعة المتقدمة</h1>
-    <button onclick="location.reload()" class="action-btn btn-approve">تحديث البيانات</button>
+    <h1>نظرة عامة على النظام</h1>
+    <button onclick="load()" class="btn-action" style="background:#6366f1; color:white; padding:12px 24px;">تحديث التقارير 🔄</button>
   </div>
 
   <div class="stats-grid">
-    <div class="stat-card"><small>إجمالي الحجوزات</small><div id="tCount">0</div></div>
-    <div class="stat-card"><small>قيد الانتظار</small><div id="pCount" style="color: #f59e0b;">0</div></div>
-    <div class="stat-card"><small>المساحات النشطة</small><div id="hCount">0</div></div>
+    <div class="stat-card">
+        <small>إجمالي الحجوزات</small>
+        <div id="tCount">0</div>
+    </div>
+    <div class="stat-card">
+        <small>طلبات بانتظار المراجعة</small>
+        <div id="pCount" style="color: #f59e0b;">0</div>
+    </div>
+    <div class="stat-card">
+        <small>المساحات النشطة</small>
+        <div id="hCount">0</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="usageChart" height="100"></canvas>
   </div>
 
   <div class="table-card">
@@ -64,51 +94,98 @@
           <th>العميل</th>
           <th>التاريخ</th>
           <th>الحالة</th>
-          <th>الإجراء</th>
+          <th>الإجراءات</th>
         </tr>
       </thead>
-      <tbody id="rows"></tbody>
+      <tbody id="rows">
+          <tr><td colspan="5">جاري جلب البيانات...</td></tr>
+      </tbody>
     </table>
   </div>
 </div>
 
 <script type="module">
-  // Restored Database Logic from previous turns
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", authDomain: "sohar-hall-booking.firebaseapp.com", projectId: "sohar-hall-booking", storageBucket: "sohar-hall-booking.firebasestorage.app", messagingSenderId: "152839243234", appId: "1:152839243234:web:3adddd0567f6631285a5bb" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Auth Guard
+  onAuthStateChanged(auth, (u) => { 
+    if(!u) window.location.href="index.html"; 
+  });
+
+  let chartInstance = null;
 
   async function load() {
-    const hSnap = await getDocs(collection(db, "halls"));
-    const bSnap = await getDocs(query(collection(db, "bookings"), orderBy("timestamp", "desc")));
-    
-    document.getElementById("hCount").innerText = hSnap.size;
-    document.getElementById("tCount").innerText = bSnap.size;
-    document.getElementById("pCount").innerText = bSnap.docs.filter(d => d.data().status === "قيد المراجعة").length;
+    try {
+      const hSnap = await getDocs(collection(db, "halls"));
+      const bSnap = await getDocs(query(collection(db, "bookings"), orderBy("timestamp", "desc")));
+      const bookings = bSnap.docs.map(d => ({id: d.id, ...d.data()}));
+      
+      document.getElementById("hCount").innerText = hSnap.size;
+      document.getElementById("tCount").innerText = bookings.length;
+      document.getElementById("pCount").innerText = bookings.filter(b => b.status === "قيد المراجعة").length;
 
-    const tbody = document.getElementById("rows");
-    tbody.innerHTML = bSnap.docs.map(d => {
-      const b = d.data();
-      return `
+      renderChart(bookings);
+
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = bookings.map(b => `
         <tr>
           <td><b>${b.hallName}</b></td>
           <td>${b.customer}</td>
           <td>${b.date}</td>
-          <td><span class="status ${b.status === 'مقبول' ? 'status-done' : 'status-pending'}">${b.status}</span></td>
           <td>
-            <button class="action-btn btn-approve" onclick="updateStatus('${d.id}', 'مقبول')">موافقة</button>
+            <span class="status ${b.status === 'مقبول' ? 'status-done' : (b.status === 'مرفوض' ? 'status-rejected' : 'status-pending')}">
+              ${b.status}
+            </span>
           </td>
-        </tr>`;
-    }).join('');
+          <td>
+            <div class="actions-flex">
+              <button class="btn-action btn-approve" onclick="updateStatus('${b.id}', 'مقبول')">قبول</button>
+              <button class="btn-action btn-reject" onclick="updateStatus('${b.id}', 'مرفوض')">رفض</button>
+              <button class="btn-action btn-delete" onclick="removeBooking('${b.id}')">حذف</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (e) { console.error(e); }
   }
 
-  window.updateStatus = async (id, s) => {
-    await updateDoc(doc(db, "bookings", id), { status: s });
-    load();
+  // UPDATE LOGIC
+  window.updateStatus = async (id, newStatus) => {
+    try {
+      await updateDoc(doc(db, "bookings", id), { status: newStatus });
+      load();
+    } catch (e) { alert("حدث خطأ في التحديث"); }
   };
+
+  // DELETE LOGIC
+  window.removeBooking = async (id) => {
+    if(!confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) return;
+    try {
+      await deleteDoc(doc(db, "bookings", id));
+      load();
+    } catch (e) { alert("حدث خطأ في الحذف"); }
+  };
+
+  function renderChart(bookings) {
+    if (chartInstance) chartInstance.destroy();
+    const counts = {};
+    bookings.forEach(b => counts[b.hallName] = (counts[b.hallName] || 0) + 1);
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(counts),
+        datasets: [{ label: 'مرات الحجز', data: Object.values(counts), backgroundColor: '#6366f1', borderRadius: 8 }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
   load();
 </script>
 </body>
