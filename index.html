@@ -2,110 +2,213 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>نظام إدارة القاعات الذكي | Smart Venue Management</title>
+  <title>لوحة التحكم الإدارية | System Console</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root { --primary: #6366f1; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    :root { --sidebar: #0f172a; --bg: #f8fafc; --primary: #6366f1; --accent: #818cf8; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; display: flex; background: var(--bg); color: #1e293b; height: 100vh; overflow: hidden; }
     
-    header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
-    header h1 { font-size: 22px; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin:0; }
+    /* Sidebar Navigation */
+    .sidebar { width: 280px; background: var(--sidebar); color: white; padding: 40px 20px; display: flex; flex-direction: column; }
+    .sidebar h2 { font-size: 14px; color: var(--accent); margin-bottom: 40px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+    .nav-link { padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; font-weight: 500; color: #94a3b8; }
+    .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
+    .nav-link.active { background: var(--primary); color: white; box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3); }
 
-    .search-section { padding: 60px 5%; text-align: center; background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg) 70%); }
-    .search-bar { max-width: 700px; margin: 0 auto; display: flex; background: var(--card-bg); padding: 6px; border-radius: 16px; border: 1px solid #334155; }
-    .search-bar input { flex: 1; background: transparent; border: none; padding: 12px 20px; color: white; outline: none; font-size: 16px; }
+    /* Main Area */
+    .content { flex: 1; padding: 40px; overflow-y: auto; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .header-row h1 { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0; }
     
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding: 40px 5%; max-width: 1400px; margin: auto; }
-    .card { background: var(--card-bg); border: 1px solid #334155; border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: all 0.4s ease; }
-    .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-    
-    .card-img { height: 200px; background-size: cover !important; background-position: center !important; position: relative; }
-    .card-img::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 50%; background: linear-gradient(transparent, var(--card-bg)); }
-    
-    .card-body { padding: 24px; }
-    .card-body h2 { margin: 0 0 8px; font-size: 20px; color: #fff; }
-    .badge { background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin: 2px; border: 1px solid rgba(99, 102, 241, 0.2); }
+    /* Stats Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 40px; }
+    .stat-card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; transition: 0.3s; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.05); }
+    .stat-card small { color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .stat-card div { font-size: 36px; font-weight: 800; margin-top: 10px; color: #0f172a; }
 
-    /* Admin Key */
-    .admin-trigger { cursor: pointer; font-size: 20px; color: #64748b; transition: 0.3s; }
-    .admin-trigger:hover { color: var(--primary); }
-
-    /* Login Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; }
-    .login-box { background: #1e293b; padding: 40px; border-radius: 24px; width: 350px; border: 1px solid #334155; text-align: center; }
-    .login-box input { width: 100%; padding: 14px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white; }
-    .login-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+    /* Chart Area */
+    .chart-container { background: white; padding: 30px; border-radius: 24px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+    
+    /* Table Styling */
+    .table-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 14px; color: #334155; }
+    
+    /* Status Badges */
+    .status { padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .status-pending { background: #fff7ed; color: #c2410c; }
+    .status-done { background: #f0fdf4; color: #15803d; }
+    .status-rejected { background: #fef2f2; color: #991b1b; }
+    
+    /* Action Buttons */
+    .btn-action { border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.2s; }
+    .btn-approve { background: #eef2ff; color: #4f46e5; margin-left: 5px; }
+    .btn-approve:hover { background: #4f46e5; color: white; }
+    .btn-reject { background: #fef2f2; color: #ef4444; }
+    .btn-reject:hover { background: #ef4444; color: white; }
   </style>
 </head>
 <body>
 
-<header>
-  <span class="admin-trigger" onclick="document.getElementById('loginModal').style.display='flex'">🔐 Admin</span>
-  <h1>Elite Space Manager</h1>
-  <div style="width:40px"></div>
-</header>
-
-<div class="search-section">
-  <h2 style="font-size: 42px; margin-bottom: 20px;">احجز مساحتك المثالية اليوم</h2>
-  <p style="color: #94a3b8; margin-bottom: 40px;">نظام ذكي لإدارة وحجز القاعات والمختبرات باحترافية</p>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="ابحث عن مساحة عمل، قاعة، أو ميزة محددة..." onkeyup="filterHalls()">
-  </div>
+<div class="sidebar">
+  <h2>System Console</h2>
+  <div class="nav-link active">📊 Dashboard Overview</div>
+  <div class="nav-link" onclick="location.href='admin-halls.html'">⚙️ Venue Management</div>
+  <div class="nav-link" onclick="location.href='index.html'">🏠 Back to Live Site</div>
 </div>
 
-<div class="grid" id="hallsGrid"></div>
+<div class="content">
+  <div class="header-row">
+    <h1>نظرة عامة على النظام</h1>
+    <button onclick="load()" class="btn-action btn-approve" style="padding: 12px 24px;">تحديث التقارير 🔄</button>
+  </div>
 
-<div class="modal-overlay" id="loginModal">
-  <div class="login-box">
-    <h2 style="margin-top:0;">تسجيل دخول الإدارة</h2>
-    <input type="email" id="adminUser" placeholder="البريد الإلكتروني">
-    <input type="password" id="adminPass" placeholder="كلمة المرور">
-    <button class="login-btn" id="loginBtn">دخول النظام</button>
-    <p onclick="document.getElementById('loginModal').style.display='none'" style="margin-top:20px; cursor:pointer; font-size:12px; color:#64748b;">إلغاء</p>
+  <div class="stats-grid">
+    <div class="stat-card">
+        <small>إجمالي الحجوزات</small>
+        <div id="tCount">0</div>
+    </div>
+    <div class="stat-card">
+        <small>طلبات بانتظار المراجعة</small>
+        <div id="pCount" style="color: #f59e0b;">0</div>
+    </div>
+    <div class="stat-card">
+        <small>المساحات المسجلة</small>
+        <div id="hCount">0</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="usageChart" height="100"></canvas>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>اسم القاعة</th>
+          <th>اسم العميل</th>
+          <th>التاريخ المختار</th>
+          <th>الفترة</th>
+          <th>الحالة الحالية</th>
+          <th>الإجراءات المتاحة</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+          <tr><td colspan="6">جاري تحميل البيانات من السحابة...</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", authDomain: "sohar-hall-booking.firebaseapp.com", projectId: "sohar-hall-booking", storageBucket: "sohar-hall-booking.firebasestorage.app", messagingSenderId: "152839243234", appId: "1:152839243234:web:3adddd0567f6631285a5bb" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  let allHalls = [];
+  // Security Check: Redirect to index.html if session is lost
+  onAuthStateChanged(auth, (u) => { 
+    if(!u) window.location.href="index.html"; 
+  });
+
+  let chartInstance = null;
 
   async function load() {
-    const snap = await getDocs(query(collection(db, "halls"), orderBy("id", "asc")));
-    allHalls = snap.docs.map(doc => doc.data());
-    render(allHalls);
-  }
-
-  function render(halls) {
-    const grid = document.getElementById("hallsGrid");
-    grid.innerHTML = halls.map(h => `
-      <a class="card" href="cccc.html?id=${h.id}">
-        <div class="card-img" style="background: url('${h.imageUrl || ''}')"></div>
-        <div class="card-body">
-          <h2>${h.name}</h2>
-          <div style="font-size:13px; color:#94a3b8; margin-bottom:12px;">👥 سعة ${h.capacity} شخص • 📍 ${h.city}</div>
-          <div>${(h.facilities || []).map(f => `<span class="badge">${f}</span>`).join('')}</div>
-        </div>
-      </a>`).join('');
-  }
-
-  window.filterHalls = () => {
-    const term = document.getElementById("searchInput").value.toLowerCase();
-    render(allHalls.filter(h => h.name.toLowerCase().includes(term)));
-  }
-
-  document.getElementById("loginBtn").onclick = async () => {
     try {
-      await signInWithEmailAndPassword(auth, document.getElementById("adminUser").value, document.getElementById("adminPass").value);
-      window.location.href = "cc11.html";
-    } catch (e) { alert("خطأ في البيانات ❌"); }
+      // 1. Fetch Count Data
+      const hSnap = await getDocs(collection(db, "halls"));
+      const bSnap = await getDocs(query(collection(db, "bookings"), orderBy("timestamp", "desc")));
+      
+      const bookings = bSnap.docs.map(d => ({id: d.id, ...d.data()}));
+      
+      document.getElementById("hCount").innerText = hSnap.size;
+      document.getElementById("tCount").innerText = bookings.length;
+      document.getElementById("pCount").innerText = bookings.filter(b => b.status === "قيد المراجعة").length;
+
+      // 2. Render Analytics Chart
+      renderChart(bookings);
+
+      // 3. Render Table Data
+      const tbody = document.getElementById("rows");
+      if(bookings.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='6'>لا توجد طلبات حجز مسجلة حالياً.</td></tr>";
+          return;
+      }
+
+      tbody.innerHTML = bookings.map(b => `
+        <tr>
+          <td><b style="color:#0f172a">${b.hallName}</b></td>
+          <td>${b.customer}</td>
+          <td>${b.date}</td>
+          <td>${b.period}</td>
+          <td>
+            <span class="status ${b.status === 'مقبول' ? 'status-done' : (b.status === 'مرفوض' ? 'status-rejected' : 'status-pending')}">
+              ${b.status}
+            </span>
+          </td>
+          <td>
+            <button class="btn-action btn-approve" onclick="updateStatus('${b.id}', 'مقبول')">✅ قبول</button>
+            <button class="btn-action btn-reject" onclick="updateStatus('${b.id}', 'مرفوض')">❌ رفض</button>
+          </td>
+        </tr>`).join('');
+    } catch (e) {
+      console.error(e);
+      document.getElementById("rows").innerHTML = "<tr><td colspan='6' style='color:red'>خطأ في الاتصال بقاعدة البيانات.</td></tr>";
+    }
+  }
+
+  // Handle Booking Status Update
+  window.updateStatus = async (id, newStatus) => {
+    try {
+      const bRef = doc(db, "bookings", id);
+      await updateDoc(bRef, { status: newStatus });
+      load(); // Reload dashboard
+    } catch (e) {
+      alert("خطأ أثناء التحديث. تأكد من صلاحيات الإدارة.");
+    }
   };
+
+  // Charting Logic using Chart.js
+  function renderChart(bookings) {
+    if (chartInstance) chartInstance.destroy();
+    
+    const counts = {};
+    bookings.forEach(b => {
+      counts[b.hallName] = (counts[b.hallName] || 0) + 1;
+    });
+
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(counts),
+        datasets: [{
+          label: 'إجمالي الحجوزات لكل قاعة',
+          data: Object.values(counts),
+          backgroundColor: '#6366f1',
+          borderRadius: 12,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { 
+            y: { beginAtZero: true, grid: { display: false } },
+            x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Initial Data Load
   load();
 </script>
 </body>
