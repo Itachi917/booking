@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>قاعات جامعة صحار | Sohar University</title>
+    <style>
+        :root { --primary: #1e3a8a; --secondary: #3b82f6; --bg: #f8fafc; --glass: rgba(255, 255, 255, 0.9); }
+        body { font-family: 'Segoe UI', Tahoma; margin: 0; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); min-height: 100vh; }
+
+        header { background: var(--glass); backdrop-filter: blur(10px); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.3); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        header h1 { margin: 0; font-size: 24px; color: var(--primary); }
+
+        .admin-key { cursor: pointer; font-size: 24px; opacity: 0.4; transition: 0.3s; }
+        .admin-key:hover { opacity: 1; transform: scale(1.1); }
+
+        .search-section { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .search-bar { display: flex; gap: 10px; background: white; padding: 8px; border-radius: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .search-bar input { flex: 1; border: none; padding: 12px 20px; outline: none; border-radius: 50px; font-size: 16px; }
+        .search-bar select { border: none; background: #f1f5f9; padding: 0 20px; border-radius: 50px; cursor: pointer; font-weight: bold; color: var(--primary); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; max-width: 1200px; margin: auto; padding: 20px; }
+        .card { background: var(--glass); border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; overflow: hidden; text-decoration: none; color: #334155; transition: 0.4s; box-shadow: 0 10px 20px rgba(0,0,0,0.03); }
+        .card:hover { transform: translateY(-10px); border-color: var(--secondary); }
+        .card-img { height: 160px; background: linear-gradient(45deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 45px; }
+        .card-body { padding: 20px; }
+        .card-body h2 { margin: 0 0 10px; font-size: 20px; color: var(--primary); }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; margin: 3px; background: #dbeafe; color: #1e40af; }
+
+        /* Login Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 35px; border-radius: 24px; width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; }
+        .login-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="admin-key" onclick="document.getElementById('loginModal').style.display='flex'">🔐</span>
+    <h1>جامعة صحار | بوابة الحجز الذكي</h1>
+    <div style="width:40px"></div>
+</header>
+
+<div class="search-section">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="ابحث عن اسم القاعة..." onkeyup="filterHalls()">
+        <select id="typeFilter" onchange="filterHalls()">
+            <option value="all">كل الأنواع</option>
+            <option value="lab">مختبرات</option>
+            <option value="seminar">قاعات محاضرات</option>
+        </select>
+    </div>
+</div>
+
+<div class="grid" id="hallsGrid"></div>
+
+<div class="modal-overlay" id="loginModal">
+    <div class="login-box">
+        <h2 style="color:var(--primary); margin-top:0;">دخول الإدارة</h2>
+        <input type="email" id="adminUser" placeholder="البريد الإلكتروني (admin@sohar.edu)">
+        <input type="password" id="adminPass" placeholder="كلمة المرور">
+        <button class="login-btn" id="loginBtn">دخول النظام</button>
+        <p onclick="document.getElementById('loginModal').style.display='none'" style="margin-top:15px; cursor:pointer; font-size:13px; color:#666;">إلغاء</p>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro",
+      authDomain: "sohar-hall-booking.firebaseapp.com",
+      projectId: "sohar-hall-booking",
+      storageBucket: "sohar-hall-booking.firebasestorage.app",
+      messagingSenderId: "152839243234",
+      appId: "1:152839243234:web:3adddd0567f6631285a5bb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let allHalls = [];
+
+    async function load() {
+      try {
+        const snap = await getDocs(query(collection(db, "halls"), orderBy("id", "asc")));
+        allHalls = snap.docs.map(doc => doc.data());
+        renderHalls(allHalls);
+      } catch (e) { console.error("Error loading halls:", e); }
+    }
+
+    window.renderHalls = (halls) => {
+      const grid = document.getElementById("hallsGrid");
+      grid.innerHTML = halls.map(h => `
+        <a class="card" href="cccc.html?id=${h.id}">
+          <div class="card-img">🏛️</div>
+          <div class="card-body">
+            <h2>${h.name}</h2>
+            <p style="font-size:14px; color:#64748b;">📍 ${h.city} • 👥 ${h.capacity} شخص</p>
+            <div>${(h.facilities || []).map(f => `<span class="badge">${f}</span>`).join('')}</div>
+          </div>
+        </a>`).join('');
+    }
+
+    window.filterHalls = () => {
+      const term = document.getElementById("searchInput").value.toLowerCase();
+      const type = document.getElementById("typeFilter").value;
+      const filtered = allHalls.filter(h => h.name.toLowerCase().includes(term) && (type === "all" || h.type === type));
+      renderHalls(filtered);
+    }
+
+    // UPDATED LOGIN LOGIC
+    document.getElementById("loginBtn").onclick = async () => {
+      const email = document.getElementById("adminUser").value;
+      const pass = document.getElementById("adminPass").value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        window.location.href = "cc11.html"; // Success! Security rules now allow access.
+      } catch (error) {
+        alert("بيانات الدخول غير صحيحة أو خطأ في الاتصال ❌");
+        console.error(error);
+      }
+    };
+    load();
+</script>
+</body>
+</html>

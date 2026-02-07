@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>لوحة التحكم الشاملة | جامعة صحار</title>
+    <style>
+        :root { --primary: #1e3a8a; --accent: #3b82f6; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma; margin: 0; background: var(--bg); display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #1e293b; color: white; padding: 30px 20px; }
+        .nav-item { padding: 12px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .nav-item.active { background: var(--accent); }
+        .main { flex: 1; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; }
+        .thumb { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        #uploadMsg { font-size: 12px; color: var(--accent); display: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="color:white; border:none;">Sohar Admin</h2>
+    <div class="nav-item" onclick="location.href='cc11.html'">📊 الإحصائيات والحجوزات</div>
+    <div class="nav-item active">⚙️ إدارة القاعات</div>
+    <div class="nav-item" onclick="location.href='ccc.html'">🏠 العودة للموقع</div>
+</div>
+
+<div class="main">
+    <div class="card">
+        <h2 id="formTitle">إدارة بيانات القاعات</h2>
+        <input type="hidden" id="docId">
+        <input type="hidden" id="currentImg">
+
+        <div class="form-grid">
+            <input type="number" id="hId" placeholder="رقم المعرف">
+            <input type="text" id="hName" placeholder="اسم القاعة">
+        </div>
+
+        <label style="font-weight:bold; font-size:14px;">تحميل صورة جديدة:</label>
+        <input type="file" id="hImgFile" accept="image/*">
+        <div id="uploadMsg">جاري الرفع... 🚀</div>
+
+        <input type="text" id="hTags" placeholder="المميزات (مثال: بروجكتر، مكيف، واي فاي)">
+        <textarea id="hDesc" placeholder="وصف مفصل للقاعة..."></textarea>
+
+        <button class="btn-save" id="saveBtn">حفظ البيانات في السحابة ☁️</button>
+    </div>
+
+    <div class="card">
+        <table style="width:100%; border-collapse: collapse;">
+            <thead>
+            <tr style="text-align:center; border-bottom: 2px solid #eee;">
+                <th>الصورة</th>
+                <th>الاسم</th>
+                <th>المميزات</th>
+                <th>إجراءات</th>
+            </tr>
+            </thead>
+            <tbody id="hallsTable" style="text-align:center;"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", authDomain: "sohar-hall-booking.firebaseapp.com", projectId: "sohar-hall-booking", storageBucket: "sohar-hall-booking.firebasestorage.app", messagingSenderId: "152839243234", appId: "1:152839243234:web:3adddd0567f6631285a5bb" };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (u) => { if(!u) window.location.href="ccc.html"; });
+
+    async function load() {
+      const snap = await getDocs(query(collection(db, "halls"), orderBy("id", "asc")));
+      const tbody = document.getElementById("hallsTable");
+      tbody.innerHTML = "";
+      snap.forEach(d => {
+        const h = d.data();
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td><img src="${h.imageUrl || ''}" class="thumb"></td>
+            <td><b>${h.name}</b></td>
+            <td>${(h.facilities || []).join(', ')}</td>
+            <td>
+              <button onclick="edit('${d.id}', ${h.id}, '${h.name}', '${h.imageUrl || ''}', '${(h.facilities || []).join(', ')}', '${h.desc || ''}')">✏️</button>
+              <button onclick="del('${d.id}')" style="color:red;">🗑️</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    document.getElementById("saveBtn").onclick = async () => {
+      const docId = document.getElementById("docId").value;
+      const file = document.getElementById("hImgFile").files[0];
+      let imgUrl = document.getElementById("currentImg").value;
+
+      if(file) {
+        document.getElementById("uploadMsg").style.display = "block";
+        const sRef = ref(storage, `halls/${Date.now()}_${file.name}`);
+        const snap = await uploadBytes(sRef, file);
+        imgUrl = await getDownloadURL(snap.ref);
+      }
+
+      const data = {
+        id: Number(document.getElementById("hId").value),
+        name: document.getElementById("hName").value,
+        imageUrl: imgUrl,
+        facilities: document.getElementById("hTags").value.split(/[،,]/).map(t => t.trim()).filter(t => t !== ""),
+        desc: document.getElementById("hDesc").value
+      };
+
+      if(docId) await updateDoc(doc(db, "halls", docId), data);
+      else await addDoc(collection(db, "halls"), data);
+
+      location.reload();
+    };
+
+    window.edit = (did, id, name, img, tags, desc) => {
+      document.getElementById("docId").value = did;
+      document.getElementById("hId").value = id;
+      document.getElementById("hName").value = name;
+      document.getElementById("currentImg").value = img;
+      document.getElementById("hTags").value = tags;
+      document.getElementById("hDesc").value = desc;
+      window.scrollTo(0,0);
+    };
+
+    window.del = async (did) => { if(confirm("حذف؟")) { await deleteDoc(doc(db, "halls", did)); load(); } };
+    load();
+</script>
+</body>
+</html>
