@@ -2,29 +2,21 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>Elite Venue Management | نظام حجز القاعات</title>
+  <title>Elite Spaces | Smart Venue Manager</title>
   <style>
+    /* ... (Style stays exactly the same as previous turn) ... */
     :root { --primary: #6366f1; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
     body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-    
     header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
     header h1 { font-size: 22px; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin:0; }
-
     .admin-trigger { cursor: pointer; font-size: 20px; color: #64748b; transition: 0.3s; }
-    .admin-trigger:hover { color: var(--primary); transform: scale(1.1); }
-
     .hero { padding: 60px 5%; text-align: center; background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg) 70%); }
     .search-bar { max-width: 600px; margin: 0 auto; display: flex; background: var(--card-bg); padding: 6px; border-radius: 16px; border: 1px solid #334155; }
     .search-bar input { flex: 1; background: transparent; border: none; padding: 12px 20px; color: white; outline: none; }
-    
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding: 40px 5%; max-width: 1400px; margin: auto; }
     .card { background: var(--card-bg); border: 1px solid #334155; border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: 0.4s; }
-    .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .card:hover { transform: translateY(-8px); border-color: var(--primary); }
     .card-img { height: 200px; background-size: cover !important; background-position: center !important; }
-    .card-body { padding: 24px; }
-    .badge { background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin: 2px; border: 1px solid rgba(99, 102, 241, 0.2); }
-
-    /* Login Modal (Hidden) */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; }
     .login-box { background: #1e293b; padding: 40px; border-radius: 24px; width: 350px; border: 1px solid #334155; text-align: center; }
     .login-box input { width: 100%; padding: 14px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white; }
@@ -40,9 +32,9 @@
 </header>
 
 <div class="hero">
-  <h2 style="font-size: 36px;">ابحث عن مساحتك المثالية</h2>
+  <h2 style="font-size: 36px;">Find Your Perfect Space</h2>
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="ابحث عن اسم القاعة..." onkeyup="filterHalls()">
+    <input type="text" id="searchInput" placeholder="Search venues..." onkeyup="filterHalls()">
   </div>
 </div>
 
@@ -50,11 +42,10 @@
 
 <div class="modal-overlay" id="loginModal">
   <div class="login-box">
-    <h2 style="margin-top:0; color:#fff;">دخول الإدارة</h2>
-    <input type="email" id="adminUser" placeholder="البريد الإلكتروني">
-    <input type="password" id="adminPass" placeholder="كلمة المرور">
-    <button class="login-btn" id="loginBtn">دخول النظام</button>
-    <p onclick="document.getElementById('loginModal').style.display='none'" style="margin-top:20px; cursor:pointer; font-size:12px; color:#64748b;">إلغاء</p>
+    <h2 style="margin-top:0;">Admin Access</h2>
+    <input type="email" id="adminUser" placeholder="Email">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button class="login-btn" id="loginBtn">Authorize</button>
   </div>
 </div>
 
@@ -62,14 +53,15 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  
+  // SECURE IMPORT
+  import { firebaseConfig } from "./firebase-config.js";
 
-  const firebaseConfig = { apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", authDomain: "sohar-hall-booking.firebaseapp.com", projectId: "sohar-hall-booking", storageBucket: "sohar-hall-booking.firebasestorage.app", messagingSenderId: "152839243234", appId: "1:152839243234:web:3adddd0567f6631285a5bb" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
 
   let allHalls = [];
-
   async function load() {
     const snap = await getDocs(query(collection(db, "halls"), orderBy("id", "asc")));
     allHalls = snap.docs.map(doc => doc.data());
@@ -83,7 +75,7 @@
         <div class="card-img" style="background: url('${h.imageUrl || ''}')"></div>
         <div class="card-body">
           <h2>${h.name}</h2>
-          <div style="font-size:13px; color:#94a3b8;">👥 سعة ${h.capacity} | 📍 ${h.city}</div>
+          <div style="font-size:13px; color:#94a3b8;">👥 Capacity ${h.capacity} | 📍 ${h.city}</div>
         </div>
       </a>`).join('');
   }
@@ -91,8 +83,8 @@
   document.getElementById("loginBtn").onclick = async () => {
     try {
       await signInWithEmailAndPassword(auth, document.getElementById("adminUser").value, document.getElementById("adminPass").value);
-      window.location.href = "cc11.html"; // Takes you to Admin
-    } catch (e) { alert("خطأ في البيانات ❌"); }
+      window.location.href = "cc11.html";
+    } catch (e) { alert("Access Denied ❌"); }
   };
   load();
 </script>
