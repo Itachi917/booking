@@ -1,94 +1,74 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <title>تفاصيل القاعة | جامعة صحار</title>
-    <style>
-        :root { --primary: #1e3a8a; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', Tahoma; margin: 0; background: var(--bg); color: #334155; }
-        header { background: white; padding: 20px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .hall-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .hall-img { height: 400px; width: 100%; object-fit: cover; background: #ddd; }
-        .content { padding: 40px; }
-        .rating-avg { color: #f59e0b; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 8px; background: #eff6ff; color: #1e40af; margin: 4px; font-weight: 600; }
-        .btn-book { display: inline-block; background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+  <meta charset="UTF-8" />
+  <title>Venue Details | Elite Spaces</title>
+  <style>
+    :root { --primary: #6366f1; --bg: #0f172a; --text: #f8fafc; }
+    body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    
+    /* New Header with Back Button */
+    header { padding: 20px 5%; display: flex; align-items: center; gap: 20px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #334155; }
+    
+    .btn-back { 
+      text-decoration: none; color: #94a3b8; font-weight: 600; font-size: 14px; 
+      display: flex; align-items: center; gap: 8px; transition: 0.3s;
+      padding: 8px 16px; border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-back:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateX(5px); }
 
-        /* Feedback Section Styles */
-        .feedback-section { margin-top: 40px; }
-        .review-item { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        .review-stars { color: #f59e0b; margin-bottom: 5px; }
-    </style>
+    .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+    .hall-card { background: #1e293b; border-radius: 24px; overflow: hidden; border: 1px solid #334155; }
+    .hall-img { height: 400px; width: 100%; object-fit: cover; background: #334155; }
+    .content { padding: 40px; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: #818cf8; margin: 4px; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.2); }
+    .btn-book { display: inline-block; background: var(--primary); color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 30px; transition: 0.3s; }
+    .btn-book:hover { box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); transform: translateY(-2px); }
+  </style>
 </head>
 <body>
 
-<header><h1>تفاصيل القاعة</h1></header>
+<header>
+  <a href="index.html" class="btn-back">← Back to Catalog</a>
+  <h1 style="margin:0; font-size:18px;">Venue Details</h1>
+</header>
 
 <div class="container">
-    <div class="hall-card">
-        <img id="hImg" class="hall-img" src="">
-        <div class="content">
-            <div id="hRating" class="rating-avg">⭐ 0.0</div>
-            <h2 id="hName" style="font-size: 32px; margin: 0 0 15px 0;">اسم القاعة</h2>
-            <p id="hDesc" style="line-height: 1.8; color: #64748b;">وصف القاعة يظهر هنا...</p>
-            <div id="hTags"></div>
-            <a id="bookLink" class="btn-book" href="#">احجز هذه القاعة الآن</a>
-        </div>
+  <div class="hall-card">
+    <img id="hImg" class="hall-img" src="">
+    <div class="content">
+      <div id="hRating" style="color:#fbbf24; font-size:20px; margin-bottom:10px;">⭐ 0.0</div>
+      <h2 id="hName" style="font-size: 32px; margin: 0 0 15px 0;">Loading...</h2>
+      <p id="hDesc" style="line-height: 1.8; color: #94a3b8; font-size: 16px;">Description loading...</p>
+      <div id="hTags"></div>
+      <a id="bookLink" class="btn-book" href="#">Book This Venue Now 📅</a>
     </div>
-
-    <div class="feedback-section">
-        <h3>آراء المستخدمين 💬</h3>
-        <div id="reviewsList">جاري تحميل التقييمات...</div>
-    </div>
+  </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase-config.js"; // Uses your secure config file
 
-    const firebaseConfig = { apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", authDomain: "sohar-hall-booking.firebaseapp.com", projectId: "sohar-hall-booking", storageBucket: "sohar-hall-booking.firebasestorage.app", messagingSenderId: "152839243234", appId: "1:152839243234:web:3adddd0567f6631285a5bb" };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const hallId = Number(new URLSearchParams(location.search).get("id"));
 
-    const hallId = Number(new URLSearchParams(location.search).get("id"));
-
-    async function loadData() {
-      // 1. Load Hall Info
-      const q = query(collection(db, "halls"), where("id", "==", hallId));
-      const snap = await getDocs(q);
-      if(!snap.empty) {
-        const h = snap.docs[0].data();
-        document.getElementById("hName").textContent = h.name;
-        document.getElementById("hDesc").textContent = h.desc;
-        document.getElementById("hImg").src = h.imageUrl || 'https://via.placeholder.com/800x400';
-        document.getElementById("hTags").innerHTML = (h.facilities || []).map(f => `<span class="badge">${f}</span>`).join('');
-        document.getElementById("bookLink").href = `ccccc.html?id=${hallId}`;
-      }
-
-      // 2. Load Reviews
-      const rq = query(collection(db, "reviews"), where("hallId", "==", hallId));
-      const rSnap = await getDocs(rq);
-      const list = document.getElementById("reviewsList");
-      list.innerHTML = "";
-
-      let totalStars = 0;
-      rSnap.forEach(doc => {
-        const r = doc.data();
-        totalStars += r.rating;
-        list.innerHTML += `
-          <div class="review-item">
-            <div class="review-stars">${"⭐".repeat(r.rating)}</div>
-            <p style="margin: 5px 0; font-weight: bold;">${r.userName}</p>
-            <p style="margin: 0; font-size: 14px; color: #64748b;">${r.comment}</p>
-          </div>`;
-      });
-
-      if(rSnap.size > 0) {
-        document.getElementById("hRating").textContent = `⭐ ${(totalStars / rSnap.size).toFixed(1)}`;
-      }
+  async function loadData() {
+    const q = query(collection(db, "halls"), where("id", "==", hallId));
+    const snap = await getDocs(q);
+    if(!snap.empty) {
+      const h = snap.docs[0].data();
+      document.getElementById("hName").textContent = h.name;
+      document.getElementById("hDesc").textContent = h.desc;
+      document.getElementById("hImg").src = h.imageUrl || '';
+      document.getElementById("hTags").innerHTML = (h.facilities || []).map(f => `<span class="badge">${f}</span>`).join('');
+      // Set the link for the next page
+      document.getElementById("bookLink").href = `ccccc.html?id=${hallId}`;
     }
-    loadData();
+  }
+  loadData();
 </script>
 </body>
 </html>
