@@ -2,62 +2,230 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>تأكيد الحجز | Elite Venue Manager</title>
+  <title>Confirm Booking | Elite Spaces</title>
+  
   <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
   <style>
-    :root { --primary: #6366f1; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
-    body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+    /* --- CSS VARIABLES & RESET --- */
+    :root { 
+      --primary: #6366f1; 
+      --primary-hover: #4f46e5;
+      --bg: #0f172a; 
+      --sidebar-bg: #1e293b; 
+      --text: #f8fafc; 
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
     
-    .sidebar { width: 400px; background: var(--card-bg); padding: 40px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 10; display: flex; flex-direction: column; overflow-y: auto; border-right: 1px solid #334155; }
-    .calendar-area { flex: 1; padding: 40px; overflow-y: auto; background: rgba(15, 23, 42, 0.5); }
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      margin: 0; 
+      background: var(--bg); 
+      color: var(--text); 
+      display: flex; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
     
-    h2 { color: #fff; margin-top: 0; font-size: 24px; font-weight: 800; }
+    /* --- SIDEBAR (BOOKING FORM) --- */
+    .sidebar { 
+      width: 400px; 
+      background: var(--sidebar-bg); 
+      padding: 40px; 
+      box-shadow: 10px 0 30px rgba(0,0,0,0.5); 
+      z-index: 10; 
+      display: flex; 
+      flex-direction: column; 
+      border-right: 1px solid var(--border); 
+      overflow-y: auto; 
+    }
+
+    /* Back Button Style */
+    .btn-back-small { 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--text-muted); 
+      text-decoration: none; 
+      font-size: 13px; 
+      font-weight: 600; 
+      margin-bottom: 30px; 
+      transition: all 0.2s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    .btn-back-small:hover { 
+      color: white; 
+      background: rgba(255,255,255,0.05);
+      transform: translateX(5px); 
+    }
+
+    h2 { 
+      margin-top: 0; 
+      color: white; 
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+
+    /* Form Inputs */
     .input-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; color: #94a3b8; font-size: 13px; }
-    input, select { width: 100%; padding: 14px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; box-sizing: border-box; font-size: 15px; outline: none; }
-    input:focus { border-color: var(--primary); }
     
-    .btn-book { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 20px; }
-    .btn-book:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+    label { 
+      display: block; 
+      margin-bottom: 8px; 
+      color: var(--text-muted); 
+      font-size: 13px; 
+      font-weight: 700; 
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
     
-    #calendar { background: #1e293b; padding: 20px; border-radius: 20px; border: 1px solid #334155; color: #fff; }
-    .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #334155 !important; }
-    .fc-list-day-cushion { background: #0f172a !important; }
+    input, select { 
+      width: 100%; 
+      padding: 14px; 
+      background: #0f172a; 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      color: white; 
+      outline: none; 
+      box-sizing: border-box;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+    
+    input:focus, select:focus { 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); 
+    }
+
+    /* Readonly Date Input */
+    #selectedDate {
+      cursor: not-allowed;
+      opacity: 0.7;
+      background: #1e293b;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* Submit Button */
+    .btn-book { 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      padding: 16px; 
+      border-radius: 12px; 
+      width: 100%; 
+      font-weight: 700; 
+      font-size: 16px; 
+      cursor: pointer; 
+      margin-top: 20px; 
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+    .btn-book:hover { 
+      background: var(--primary-hover); 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    }
+    .btn-book:disabled {
+      background: var(--border);
+      cursor: wait;
+      transform: none;
+    }
+
+    /* Success Message */
+    #msg {
+      display: none; 
+      background: rgba(74, 222, 128, 0.1); 
+      color: #4ade80; 
+      padding: 15px; 
+      border-radius: 12px; 
+      margin-top: 20px; 
+      text-align: center; 
+      font-weight: bold;
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    /* --- CALENDAR AREA --- */
+    .calendar-area { 
+      flex: 1; 
+      padding: 40px; 
+      overflow-y: auto; 
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); 
+    }
+    
+    #calendar { 
+      background: var(--sidebar-bg); 
+      padding: 25px; 
+      border-radius: 24px; 
+      border: 1px solid var(--border); 
+      color: #fff; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* FullCalendar Overrides for Dark Mode */
+    .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border) !important; }
+    .fc-col-header-cell { background: #0f172a; color: var(--text-muted); padding: 10px 0; }
+    .fc-daygrid-day-number { color: var(--text); font-weight: 500; }
+    .fc-button-primary { background-color: var(--primary) !important; border: none !important; }
+    .fc-day-today { background: rgba(99, 102, 241, 0.05) !important; }
+    .fc-event { cursor: pointer; border-radius: 6px; }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <h2 id="hName">جاري تحميل القاعة...</h2>
-  <p style="color: #64748b; font-size: 14px; margin-bottom: 30px;">يرجى اختيار تاريخ من التقويم وإكمال بياناتك.</p>
+  <a id="backBtn" href="#" class="btn-back-small">← Back to Venue Details</a>
+  
+  <h2 id="hName">Loading Venue...</h2>
+  <p class="subtitle">Please select a date from the calendar to check availability and proceed with your booking.</p>
   
   <div class="input-group">
-    <label>التاريخ المختار</label>
-    <input type="text" id="selectedDate" placeholder="اضغط على تاريخ من التقويم" readonly>
+    <label>Selected Date</label>
+    <input type="text" id="selectedDate" placeholder="Click a date on calendar..." readonly>
   </div>
   
   <div class="input-group">
-    <label>الفترة الزمنية</label>
+    <label>Time Slot</label>
     <select id="period">
-      <option>صباح (8:00 - 13:00)</option>
-      <option>مساء (14:00 - 19:00)</option>
-      <option>كامل اليوم</option>
+      <option value="Morning">Morning (8:00 AM - 1:00 PM)</option>
+      <option value="Evening">Evening (2:00 PM - 7:00 PM)</option>
+      <option value="Full Day">Full Day (8:00 AM - 7:00 PM)</option>
     </select>
   </div>
   
   <div class="input-group">
-    <label>الاسم الكامل</label>
-    <input type="text" id="customer" placeholder="ادخل اسمك">
+    <label>Full Name</label>
+    <input type="text" id="customer" placeholder="e.g. John Doe">
+  </div>
+
+  <div class="input-group">
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="e.g. student@sohar.edu">
   </div>
   
   <div class="input-group">
-    <label>رقم الهاتف</label>
-    <input type="tel" id="phone" placeholder="9xxxxxxx">
+    <label>Phone Number</label>
+    <input type="tel" id="phone" placeholder="e.g. 968 9xxxxxxx">
   </div>
 
-  <button class="btn-book" id="confirmBtn">تأكيد طلب الحجز</button>
-  <p id="msg" style="display:none; color:#4ade80; text-align:center; margin-top:15px; font-weight:bold;">تم إرسال طلبك بنجاح! ✅</p>
+  <button class="btn-book" id="confirmBtn">Confirm Booking Request</button>
+  
+  <div id="msg">
+    Request Sent Successfully! ✅<br>
+    <span style="font-size:12px; opacity:0.8; font-weight:normal;">Please wait for admin approval.</span>
+  </div>
 </div>
 
 <div class="calendar-area">
@@ -67,98 +235,123 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = { 
-    apiKey: "AIzaSyCqjKlVjtp7gaEJpQXxVgr1i2xCZUJ7yro", 
-    authDomain: "sohar-hall-booking.firebaseapp.com", 
-    projectId: "sohar-hall-booking", 
-    storageBucket: "sohar-hall-booking.firebasestorage.app", 
-    messagingSenderId: "152839243234", 
-    appId: "1:152839243234:web:3adddd0567f6631285a5bb" 
-  };
+  import { firebaseConfig } from "./firebase-config.js";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const hallId = Number(new URLSearchParams(location.search).get("id"));
 
-  let hallData = null;
+  // Link the back button immediately so user isn't stuck
+  document.getElementById("backBtn").href = `cccc.html?id=${hallId}`;
 
   async function init() {
-    // 1. Get current hall details
+    // 1. Fetch Hall Details
     const qHall = query(collection(db, "halls"), where("id", "==", hallId));
     const snapHall = await getDocs(qHall);
-    if (!snapHall.empty) {
-      hallData = snapHall.docs[0].data();
-      document.getElementById("hName").innerText = "حجز " + hallData.name;
+    
+    if (snapHall.empty) {
+      document.getElementById("hName").innerText = "Venue Not Found";
+      return;
     }
 
-    // 2. Fetch bookings ONLY for this hall
+    const h = snapHall.docs[0].data();
+    document.getElementById("hName").innerText = "Book: " + h.name;
+      
+    // 2. Fetch Existing Bookings (FILTERED by Hall Name)
     const qBookings = query(
       collection(db, "bookings"), 
-      where("hallName", "==", hallData.name),
+      where("hallName", "==", h.name), 
       where("status", "==", "مقبول")
     );
     const snapBookings = await getDocs(qBookings);
-    const events = snapBookings.docs.map(doc => ({
-      title: 'محجوز',
-      start: doc.data().date,
-      allDay: true,
-      backgroundColor: '#ef4444',
-      borderColor: '#ef4444'
+    
+    // Map Firestore docs to FullCalendar events
+    const events = snapBookings.docs.map(doc => ({ 
+      title: 'Booked', 
+      start: doc.data().date, 
+      allDay: true, 
+      backgroundColor: '#ef4444', 
+      borderColor: '#ef4444',
+      display: 'background' // Optional: makes the whole cell red
     }));
 
     // 3. Render Calendar
-    const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
-      locale: 'ar',
+      locale: 'ar', 
       direction: 'rtl',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,listMonth'
+      },
       events: events,
+      selectable: true,
       dateClick: function(info) {
+        // Simple client-side check: is this date in the events list?
+        // (Note: For robust checking, we rely on backend, but this is a good visual aid)
         document.getElementById('selectedDate').value = info.dateStr;
+        
+        // Visual feedback
+        document.querySelectorAll('.fc-day').forEach(el => el.style.backgroundColor = ''); // reset
+        info.dayEl.style.backgroundColor = 'rgba(99, 102, 241, 0.2)'; // highlight selection
       }
     });
     calendar.render();
   }
 
-  // FIXED SUBMIT FUNCTION
+  // --- SUBMISSION LOGIC ---
   document.getElementById("confirmBtn").onclick = async () => {
+    // Gather values
     const date = document.getElementById("selectedDate").value;
-    const customer = document.getElementById("customer").value.trim();
-    const phone = document.getElementById("phone").value.trim();
     const period = document.getElementById("period").value;
+    const customer = document.getElementById("customer").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const hallNameText = document.getElementById("hName").innerText.replace("Book: ", "");
 
-    if(!date || !customer || !phone) {
-      alert("يرجى ملء جميع الحقول واختيار تاريخ");
-      return;
-    }
+    // Validation
+    if(!date) return alert("Please select a date from the calendar.");
+    if(!customer || !email || !phone) return alert("Please fill in all your contact details.");
 
+    // UI Loading State
+    const btn = document.getElementById("confirmBtn");
+    btn.disabled = true; 
+    btn.innerText = "Processing Request...";
+    
     try {
-      const btn = document.getElementById("confirmBtn");
-      btn.disabled = true;
-      btn.innerText = "جاري الإرسال...";
-
+      // Add to Firestore
       await addDoc(collection(db, "bookings"), {
-        hallId: hallId,
-        hallName: hallData.name,
-        date: date,
-        period: period,
-        customer: customer,
-        phone: phone,
-        status: "قيد المراجعة",
+        hallId: hallId, 
+        hallName: hallNameText,
+        date: date, 
+        period: period, 
+        customer: customer, 
+        email: email, // Restored field
+        phone: phone, 
+        status: "قيد المراجعة", 
         timestamp: new Date()
       });
 
+      // Success UI
       document.getElementById("msg").style.display = "block";
       btn.style.display = "none";
       
-    } catch (error) {
-      console.error("Booking Error:", error);
-      alert("حدث خطأ أثناء الحجز، يرجى المحاولة مرة أخرى");
-      document.getElementById("confirmBtn").disabled = false;
-      document.getElementById("confirmBtn").innerText = "تأكيد طلب الحجز";
+      // Optional: Clear form
+      document.getElementById("customer").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("phone").value = "";
+
+    } catch(e) { 
+      console.error("Booking failed:", e); 
+      alert("Error sending request. Please check your internet connection."); 
+      btn.disabled = false; 
+      btn.innerText = "Confirm Booking Request";
     }
   };
 
+  // Start the page
   init();
 </script>
 </body>
